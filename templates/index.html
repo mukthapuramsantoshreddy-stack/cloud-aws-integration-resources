@@ -1,0 +1,270 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Student Management System</title>
+
+    <style>
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background: #f1f5f9;
+            color: #172033;
+        }
+
+        .container {
+            max-width: 1050px;
+            margin: auto;
+        }
+
+        h1, h2 { color: #173b70; }
+
+        .panel {
+            background: white;
+            padding: 22px;
+            margin-bottom: 24px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px #0000000d;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 16px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: bold;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 11px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            font-size: 15px;
+        }
+
+        button {
+            padding: 12px 18px;
+            color: white;
+            background: #2457c5;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .full { grid-column: 1 / -1; }
+
+        .message {
+            padding: 12px;
+            margin-bottom: 12px;
+            border-radius: 6px;
+        }
+
+        .success {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .error {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .student-grid {
+            display: grid;
+            grid-template-columns: repeat(
+                auto-fit, minmax(280px, 1fr)
+            );
+            gap: 16px;
+        }
+
+        .student-card {
+            display: flex;
+            gap: 14px;
+            padding: 15px;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            overflow-wrap: anywhere;
+        }
+
+        .student-card img {
+            width: 95px;
+            height: 110px;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+
+        .student-card h3 { margin-top: 0; }
+
+        .student-card p {
+            margin: 6px 0;
+            font-size: 14px;
+        }
+
+        .muted { color: #64748b; font-size: 13px; }
+
+        @media (max-width: 600px) {
+            .form-grid { grid-template-columns: 1fr; }
+            .full { grid-column: auto; }
+            body { padding: 10px; }
+            .panel { padding: 15px; }
+        }
+    </style>
+</head>
+
+<body>
+<div class="container">
+
+    <h1>Student Management System</h1>
+    <p>Register student details and upload a student photo.</p>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for category, message in messages %}
+            <div class="message {{ category }}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endwith %}
+
+    <section class="panel">
+        <h2>Student Registration</h2>
+
+        <form method="POST" enctype="multipart/form-data">
+            <div class="form-grid">
+
+                <div>
+                    <label for="student_name">Student name *</label>
+                    <input id="student_name" name="student_name"
+                           maxlength="120" required>
+                </div>
+
+                <div>
+                    <label for="roll_number">Roll number *</label>
+                    <input id="roll_number" name="roll_number"
+                           maxlength="50" required>
+                </div>
+
+                <div>
+                    <label for="phone_number">Phone number *</label>
+                    <input id="phone_number" name="phone_number"
+                           type="tel" maxlength="20" required>
+                </div>
+
+                <div>
+                    <label for="email">Email address *</label>
+                    <input id="email" name="email" type="email"
+                           maxlength="254" required>
+                </div>
+
+                <div>
+                    <label for="college_name">College name *</label>
+                    <input id="college_name" name="college_name"
+                           maxlength="180" required>
+                </div>
+
+                <div>
+                    <label for="course_branch">Course / branch *</label>
+                    <input id="course_branch" name="course_branch"
+                           placeholder="e.g. B.Tech - CSE"
+                           maxlength="120" required>
+                </div>
+
+                <div>
+                    <label for="year_of_study">Year of study *</label>
+                    <select id="year_of_study" name="year_of_study"
+                            required>
+                        <option value="">Select year</option>
+                        <option value="1st year">1st year</option>
+                        <option value="2nd year">2nd year</option>
+                        <option value="3rd year">3rd year</option>
+                        <option value="4th year">4th year</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label for="student_photo">Student photo *</label>
+                    <input id="student_photo" name="student_photo"
+                           type="file"
+                           accept=".jpg,.jpeg,.png,.gif,.webp"
+                           required>
+                    <p class="muted">
+                        JPG, JPEG, PNG, GIF or WEBP. Maximum 10 MB.
+                    </p>
+                </div>
+
+                <div class="full">
+                    <button type="submit">
+                        Register Student and Upload Photo
+                    </button>
+                </div>
+
+            </div>
+        </form>
+    </section>
+
+    <section class="panel">
+        <h2>Registered Students ({{ students|length }})</h2>
+
+        {% if students %}
+            <div class="student-grid">
+                {% for student in students %}
+                    <article class="student-card">
+
+                        <div>
+                            {% if student.photo_url %}
+                                <a href="{{ student.photo_url }}"
+                                   target="_blank"
+                                   rel="noopener noreferrer">
+                                    <img src="{{ student.photo_url }}"
+                                         alt="Student photo">
+                                </a>
+                            {% else %}
+                                <p>No photo available</p>
+                            {% endif %}
+                        </div>
+
+                        <div>
+                            <h3>{{ student.student_name }}</h3>
+                            <p><strong>Roll:</strong>
+                                {{ student.roll_number }}</p>
+                            <p><strong>Phone:</strong>
+                                {{ student.phone_number }}</p>
+                            <p><strong>Email:</strong>
+                                {{ student.email }}</p>
+                            <p><strong>College:</strong>
+                                {{ student.college_name }}</p>
+                            <p><strong>Course:</strong>
+                                {{ student.course_branch }}</p>
+                            <p><strong>Year:</strong>
+                                {{ student.year_of_study }}</p>
+                        </div>
+
+                    </article>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="muted">
+                No student records yet. Register the first student above.
+            </p>
+        {% endif %}
+    </section>
+
+    <p class="muted">
+        Student details and photos are stored in a private S3 bucket.
+        Photo viewing links expire after 15 minutes.
+    </p>
+
+</div>
+</body>
+</html>
